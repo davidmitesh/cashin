@@ -18,9 +18,9 @@ app.post('/newuser',(req,res)=>{
   var user=new newUser(body);
   var curr=new currUser(body);
 
-  curr.saveRecord().then(()=>{
-
-  });
+  // curr.saveRecord().then(()=>{
+  //
+  // });
   user.saveRecord().then((result)=>{
     res.send(result);
 
@@ -37,29 +37,37 @@ app.post('/newuser',(req,res)=>{
 // });
 app.post('/currentupdate',(req,res)=>{
   var body=_.pick(req.body,['email','password'])
-  var newPledge=new currUser(body);
-  newPledge.updateRecord().then(()=>{
-    currUser.find({email:body.email,password:body.password},(err,docs)=>{
-      console.log("from server.js 1st",docs);
-      if (docs){
-        newUser.findOneAndUpdate({email:docs[0].email,password:docs[0].password},{credits:docs[0].credits,pledgeNumber:docs[0].pledgeNumber},function(err,doc){
-          if (doc){
-            currUser.findOneAndDelete(docs,()=>{
-              console.log("deleted");
+  newUser.findOne({email:body.email,password:body.password},function(err,findDoc){
+    if (findDoc.length==1){
+      var newPledge=new currUser(findDoc);
+      newPledge.saveRecord().then((doc)=>{
+        if (doc){
+          currUser.updateRecord().then(()=>{
+            currUser.find((err,docs)=>{
+              console.log("from server.js 1st",docs);
+              if (docs){
+                newUser.findOneAndUpdate({email:docs[0].email,password:docs[0].password},{credits:docs[0].credits,pledgeNumber:docs[0].pledgeNumber},function(err,doc){
+                  if (doc){
+                    currUser.findOneAndDelete(docs,()=>{
+                      console.log("deleted");
+                    });
+                  }
+              });
+              };
             });
-          }
+          });
+        }
       });
-
-
-      };
+    }
     });
 
-    // currUser.findOneAndRemove({email:docs.email},function(err,result){
-    //   // console.log(result);
-    // });
+    res.send("succesfully completed");
   });
-  res.send("succesfully completed");
-});
+
+
+
+
+
 
 
 app.listen(3000,()=>{

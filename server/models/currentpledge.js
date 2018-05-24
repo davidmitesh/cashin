@@ -23,10 +23,12 @@ var userSchema=new mongoose.Schema({
         minlength:6
       },
       credits:{
-        type: Number
+        type: Number,
+        default: 0
       },
       pledgeNumber:{
-        type:Number
+        type:Number,
+        default:0
       }
       // tokens:[{
       //   access:{
@@ -59,12 +61,12 @@ return   user.save().then((doc)=>{
   });
 };
 
-userSchema.methods.updateRecord=function(){
+userSchema.statics.updateRecord=function(){
   var curUser=this;
-return   currUser.findOne({email:curUser.email,password:curUser.password},function(err,docs){
+return   curUser.find(function(err,docs){
     if (docs){
-      console.log(docs);
-       return docs.update({$inc:{credits:100,pledgeNumber:1}},()=>{
+      console.log("from updaterecord funciton",docs);
+       return docs[0].update({$inc:{credits:100,pledgeNumber:1}},()=>{
 
        });
       //    ,()=>{
