@@ -12,7 +12,7 @@ var app=express();
 app.use(bodyParser.json());
 
 app.post('/newuser',(req,res)=>{
-  var body=_.pick(req.body,['email','password']);
+  var body=_.pick(req.body,['email','password','pledge']);
   body.credits=0;
   body.pledgeNumber=0;
   var user=new newUser(body);
@@ -23,52 +23,24 @@ app.post('/newuser',(req,res)=>{
   // });
   user.saveRecord().then((result)=>{
     res.send(result);
-
   });
-
 });
-// app.post('/currentsave',(req,res)=>{
-//   var body=_.pick(req.body,['email','password','credits']);
-//   body.pledgeNumber=1;
-//   var newPledge=new currUser(body);
-//   newPledge.saveRecord().then((result)=>{
-//     res.send(result);
-//   });
-// });
 app.post('/currentupdate',(req,res)=>{
-  var body=_.pick(req.body,['email','password'])
-  newUser.findOne({email:body.email,password:body.password},function(err,findDoc){
-    if (findDoc.length==1){
-      var newPledge=new currUser(findDoc);
-      newPledge.saveRecord().then((doc)=>{
-        if (doc){
-          currUser.updateRecord().then(()=>{
-            currUser.find((err,docs)=>{
-              console.log("from server.js 1st",docs);
-              if (docs){
-                newUser.findOneAndUpdate({email:docs[0].email,password:docs[0].password},{credits:docs[0].credits,pledgeNumber:docs[0].pledgeNumber},function(err,doc){
-                  if (doc){
-                    currUser.findOneAndDelete(docs,()=>{
-                      console.log("deleted");
-                    });
-                  }
-              });
-              };
-            });
-          });
-        }
-      });
-    }
-    });
+  var body=_.pick(req.body,['email','password']);
+  console.log(body);
 
-    res.send("succesfully completed");
+  newUser.findOneAndUpdate({'pledge':true},{$set:{'pledge':false},$inc:{'pledgeNumber':1,'credits':100}},function(err,result){
+if (result){
+  newUser.update({'email':body.email,'password':body.password},{$set:{'pledge':true}},function(){
+    res.send("completed");
+  });
+}
+
   });
 
 
 
-
-
-
+  });
 
 app.listen(3000,()=>{
   console.log("server is up");

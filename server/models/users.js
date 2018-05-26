@@ -24,30 +24,16 @@ var userSchema=new mongoose.Schema({
         type: Number
       },
       pledgeNumber:{
-        type:Number
+        type:Number,
+        default: 0
+      },
+      pledge:{
+        type: Boolean,
+        default: false
       }
-      // tokens:[{
-      //   access:{
-      //     type:String,
-      //     required: true
-      //   },
-      //   token:{
-      //     type:String,
-      //     required:true
-      //   }
-      // }]
 });
 
-// userSchema.methods.generateAuthToken=function(){
-//   var access="auth";
-//   var currUser=this;
-//   var token=jwt.sign({_id:currUser._id.toHexString(),access},'abc1').toString();
-//
-//    currUser.tokens.push({access,token});
-//    return currUser.save().then(()=>{
-//      return token;
-//    });
-// };
+
 userSchema.methods.saveRecord=function(){
   var user=this;
 return   user.save().then((doc)=>{
