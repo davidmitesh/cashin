@@ -4,7 +4,6 @@ var bodyParser=require('body-parser');
 
 
 var {mongoose}=require('./db/mongoose.js');
-var {currUser}=require('./models/currentpledge.js');
 var {newUser}=require('./models/users.js');
 
 
@@ -16,11 +15,7 @@ app.post('/newuser',(req,res)=>{
   body.credits=0;
   body.pledgeNumber=0;
   var user=new newUser(body);
-  var curr=new currUser(body);
 
-  // curr.saveRecord().then(()=>{
-  //
-  // });
   user.saveRecord().then((result)=>{
     res.send(result);
   });
@@ -29,9 +24,9 @@ app.post('/currentupdate',(req,res)=>{
   var body=_.pick(req.body,['email','password']);
   console.log(body);
 
-  newUser.findOneAndUpdate({'pledge':true},{$set:{'pledge':false},$inc:{'pledgeNumber':1,'credits':100}},function(err,result){
+  newUser.findOneAndUpdate({'pledge':true},{$set:{'pledge':false},$inc:{'pledgeNumber':1,'credits':70}},function(err,result){
 if (result){
-  newUser.update({'email':body.email,'password':body.password},{$set:{'pledge':true}},function(){
+  newUser.update({'email':body.email,'password':body.password},{$set:{'pledge':true},$inc:{'credits':-50}},function(){
     res.send("completed");
   });
 }
