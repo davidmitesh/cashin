@@ -30,6 +30,9 @@ var userSchema=new mongoose.Schema({
       pledge:{
         type: Boolean,
         default: false
+      },
+      count:{
+        type: Number
       }
 });
 
