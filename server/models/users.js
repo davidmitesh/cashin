@@ -16,7 +16,6 @@ var userSchema=new mongoose.Schema({
       }},
       password:{
         type:String,
-
         required:true,
         minlength:6
       },
@@ -33,16 +32,32 @@ var userSchema=new mongoose.Schema({
       },
       count:{
         type: Number
-      }
+      },
+      tokens:[{
+        access:{
+          type:String,
+          required:true
+        },
+        token:{
+          type:String,
+          required:true
+        }
+      }]
 });
 
 
-userSchema.methods.saveRecord=function(){
-  var user=this;
-return   user.save().then((doc)=>{
-    return doc;
-  },(err)=>{
-    return err;
+userSchema.methods.toJSON=function(){   //changing the functionality or overriding the functionality of inbuilt
+  //toJSON method that gets called when res.send is called.
+var userObject=this.toObject();
+return _.pick(userObject,['_id','email']);
+}
+
+userSchema.methods.genAuthToken=function(){
+  var access='auth';
+  var token=jwt.sign({_id:this._id.toHexString(),access},'abc123').toString();
+  this.tokens.push({access,token});// using ES6 syntax as opposed to access:access and token:token
+  return this.save().then(()=>{
+    return token
   });
 };
 

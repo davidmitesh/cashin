@@ -20,20 +20,20 @@ app.post('/newuser',(req,res)=>{  //new user request
   body.count=0;
   var user=new newUser(body);
 
-  user.saveRecord().then((result)=>{
-    res.send(result);
+  user.save().then((user)=>{
+  return user.genAuthToken();
+}).then((token)=>{
+  res.header('x-auth',token).send(user);
+}).catch((e)=>{
+    res.status(400).send("user cannot be saved",e);
   });
 });
 app.post('/currentupdate',(req,res)=>{//pledge request
   var body=_.pick(req.body,['email','password']);
   console.log(body);
-  // var noti=new notification({text:"Your pledge request set on",notificationTime:moment().format('MMMM Do YYYY, h:mm:ss a'),email:body.email,password:body.password});
-  // noti.saveRecord().then((result)=>{
-  // });
 newUser.updateMany({'pledge':true},{$inc:{'count':1}},(err,result)=>{
 if (result){
   newUser.findOneAndUpdate({'count':3,'pledge':true},{$set:{'pledge':false,'count':0},$inc:{'pledgeNumber':1,'credits':70}},(err,result)=>{
-    // console.log(result);
     if (result){
       notification.findOneAndUpdate({'email':result.email,'password':result.password},{$set:{'text':"your pledge is completed."}},(err,result)=>{
         notification.findOneAndUpdate({'email':body.email,'password':body.password},{$set:{text:"Your pledge request is set on",notificationTime:moment().format('MMMM Do YYYY, h:mm:ss a')}},(err,result)=>{
@@ -42,7 +42,6 @@ if (result){
             res.send("completed");
         });
       });
-
     });
   }else{
     notification.findOneAndUpdate({'email':body.email,'password':body.password},{$set:{text:"Your pledge request is set on",notificationTime:moment().format('MMMM Do YYYY, h:mm:ss a')}},(err,result)=>{
@@ -51,7 +50,6 @@ if (result){
         res.send("completed");
     });
   });
-
   }
   });
 }
