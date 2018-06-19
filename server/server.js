@@ -6,7 +6,7 @@ const moment=require('moment');
 var {notification}=require('./models/notification.js');
 var {mongoose}=require('./db/mongoose.js');
 var {newUser}=require('./models/users.js');
-
+var {authenticate}=require('./middleware/authenticate');
 
 var app=express();
 app.use(bodyParser.json());// use of middleware
@@ -27,6 +27,10 @@ app.post('/newuser',(req,res)=>{  //new user request
 }).catch((e)=>{
     res.status(400).send("user cannot be saved",e);
   });
+});
+
+app.get('/user/me',authenticate,(req,res)=>{
+res.send(req.user);
 });
 app.post('/currentupdate',(req,res)=>{//pledge request
   var body=_.pick(req.body,['email','password']);

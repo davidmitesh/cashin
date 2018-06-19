@@ -60,7 +60,19 @@ userSchema.methods.genAuthToken=function(){
     return token
   });
 };
-
+userSchema.statics.findByToken=function(token){
+  var decoded;
+  try{
+    decoded=jwt.verify(token,'abc123');
+  }catch(e){
+     return Promise.reject();
+  }
+  return this.findOne({
+    _id:decoded._id,
+    'tokens.token':token,//if there is dot in between, you need to wrap in quotes
+    'tokens.access':'auth'
+  });
+};
 var newUser=mongoose.model('newUser',userSchema);
 
 module.exports={newUser}
