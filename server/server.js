@@ -32,6 +32,24 @@ app.post('/newuser',(req,res)=>{  //new user request
 app.get('/user/me',authenticate,(req,res)=>{
 res.send(req.user);
 });
+
+app.post('/user/login',(req,res)=>{
+  var body=_.pick(req.body,['email','password']);
+  newUser.findByCredentials(body.email,body.password).then((user)=>{
+    user.genAuthToken().then((token)=>{
+      res.header('x-auth',token).send();
+    })
+  }).catch((e)=>{
+    res.status(400).send();
+  });
+});
+app.delete('/user/tokendelete',authenticate,(req,res)=>{
+  req.user.removeToken(req.token).then(()=>{
+    res.status(200).send();
+  },()=>{
+    res.status(400).send();
+  });
+});
 app.post('/currentupdate',(req,res)=>{//pledge request
   var body=_.pick(req.body,['email','password']);
   console.log(body);
