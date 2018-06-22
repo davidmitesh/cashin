@@ -34,6 +34,10 @@ var userSchema=new mongoose.Schema({
       count:{
         type: Number
       },
+      owncount:{
+        type:Number,
+        default:1
+      },
       tokens:[{
         access:{
           type:String,
