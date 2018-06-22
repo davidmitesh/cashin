@@ -3,6 +3,8 @@ const _=require('lodash');
 var bodyParser=require('body-parser');
 const moment=require('moment');
 
+
+
 var {notification}=require('./models/notification.js');
 var {mongoose}=require('./db/mongoose.js');
 var {newUser}=require('./models/users.js');
@@ -56,17 +58,24 @@ app.delete('/user/tokendelete',authenticate,(req,res)=>{
 app.post('/currentupdate',(req,res)=>{//pledge request
   var body=_.pick(req.body,['email','password']);
   console.log(body);
- newUser.updateMany({'pledge':true,'count':{$lt:3}},{$inc:{'count':1}},(err,result)=>{
+   var d=new Date();
+  newUser.findOneAndUpdate({'email':body.email},{$push:{'times':d.getTime()}},(err,result)=>
+ {newUser.updateMany({'pledge':true,'count':{$lt:3}},{$inc:{'count':1}},(err,result)=>{
 if (result){
-  newUser.findOneAndUpdate({'email':body.email},{$set:{'pledge':true},$inc:{'owncount':1}},(err,result)=>{
 
+
+  newUser.findOneAndUpdate({'email':body.email},{$set:{'pledge':true},$inc:{'owncount':1}},(err,result)=>{
     if (result){
         newUser.find({'count':3,'pledge':true},(err,result)=>{
         if(result.length!=0){
         console.log("objects with count 3 and pledge true are",result);
-        var great=_.maxBy(result, function(o) { return o.owncount });
+
+        var great=_.minBy(result, function(o) { return o.times[0] });
+        // var great=_.maxBy(result, function(o) { return o.owncount });
        console.log("gretest object is",great);
-        newUser.findOneAndUpdate({email:great.email},{$inc:{'owncount':-1,'credits':70,'pledgeNumber':1}},(err,result)=>{
+       console.log("value of time",great.times[0]);
+        newUser.findOneAndUpdate({email:great.email},{$inc:{'owncount':-1,'credits':70,'pledgeNumber':1},$pull:{'times':great.times[0]}},(err,result)=>{
+
         console.log("pledge completed object",result);
           if (result){
             newUser.findOneAndUpdate({'count':3,'owncount':0,'pledge':true},{$set:{'pledge':false,'count':0}},(err,result)=>{
@@ -82,7 +91,7 @@ if (result){
       }
     });
   }
-});
+});});
 });
 //   newUser.findOneAndUpdate({'count':3,'pledge':true},{$set:{'pledge':false,'count':0},$inc:{'pledgeNumber':1,'credits':70}},(err,result)=>{
 //     if (result){
